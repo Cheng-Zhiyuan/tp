@@ -8,7 +8,11 @@ Additionally, users have the ability to add their own recipes to the main recipe
 ### Summary of Contributions
 * Code contributed: [RepoSense link](https://nus-cs2113-ay2425s2.github.io/tp-dashboard/?search=olsonwangyj&breakdown=true&sort=groupTitle%20dsc&sortWithin=title&since=2025-02-21&timeframe=commit&mergegroup=&groupSelect=groupByRepos&checkedFileTypes=docs~functional-code~test-code~other&tabOpen=true&tabType=authorship&tabAuthor=olsonwangyj&tabRepo=AY2425S2-CS2113-F14-4%2Ftp%5Bmaster%5D&authorshipIsMergeGroup=false&authorshipFileTypes=docs~functional-code&authorshipIsBinaryFileTypeChecked=false&authorshipIsIgnoredFilesChecked=false)
 * Enhancements Implemented
+  * Designed some logic of Exceptions
+  * Implemented the logic of Checkers
+  * Design some Commands
 * Reviewed PRs
+* Helped merge codes
 * Documentation:
   * User guide:
     * Add documentation for different commands

@@ -1839,51 +1839,283 @@ public void consumeChecker_noIngredients_throwsMissingIngredientException() {
 ##### 14.1 Design Overview
 
 ###### Function
+RecommendChecker checks for the validity of the user input before passing to the RecommendCommand to generate a list of recommended meals containing the ingredient as stated in the user input and selecting a random meal from it.
 
 ###### Design Goals
+
+**Single Responsibility:**
+- RecommendChecker solely handles the checks of the user input while RecommendCommand solely handles the processing of the user input into ingredient and randomly selecting a meal from the generated list of meals which contains the ingredient as suggested by the user.
+
+**Decoupling:**
+- By segregating responsibilities, it makes the code easier to maintain and extend.
+
+**Testability:**
+- The design supports unit testing by allowing test-specific RecommendCommandTest and RecommendCheckerTest to capture and verify the output.
 
 ##### 14.2 Implementation Details
 
 ###### Component Level: RecommendChecker Class
+- Inherits from the abstract Checker Class.
+- Implements the `check()` method.
+- Uses logging to indicate execution.
+- `isPassed` is set to `true` once the user input passes all the required checks.
+- Passes the valid user input back into the RecommendCommand class for processing.
 
 ###### Component Level: RecommendCommand Class
+- Inherits from the abstract Command class.
+- Implements the `execute(MealManager mealManager, UserInterface ui)` method.
+- Uses logging to indicate execution.
+- Generates a list of recommended meals with the selected ingredient and randomly selects a meal to print.
 
 ###### Code Example
+```java
+ @Override
+    public void execute(MealManager mealManager, UserInterface ui) throws EZMealPlanException {
+        // Validate input using RecommendChecker.
+        RecommendChecker checker = new RecommendChecker(validUserInput);
+        checker.check();
+        if (!checker.isPassed()) {
+            logger.severe("Invalid recommend command input detected.");
+            return;
+        }
+
+        // Extract the ingredient keyword.
+        // Expected input format: "recommend /ing Chicken"
+        int afterRecommendIndex = validUserInput.toLowerCase().indexOf(RECOMMEND) + RECOMMEND.length();
+        String args = validUserInput.substring(afterRecommendIndex).trim();
+        int ingIndex = args.toLowerCase().indexOf(ING);
+        int invalidIndex = -1;
+        if (ingIndex == invalidIndex) {
+            logger.severe("Ingredient marker '/ing' not found in input.");
+            ui.printMessage("Missing ingredient marker '/ing'.");
+            return;
+        }
+        int afterIngIndex = ingIndex + ING.length();
+        String extractedKeyword = args.substring(afterIngIndex).trim();
+        if (extractedKeyword.isEmpty()) {
+            logger.severe("No ingredient specified after '/ing'.");
+            ui.printMessage("No ingredient specified.");
+            return;
+        }
+
+        // Proceed with recommendation logic.
+        Inventory inventory = mealManager.getInventory();
+
+        // First, filter the user meal list (wishlist) by the ingredient keyword.
+        List<Meal> wishList = mealManager.getWishList().getList();
+        List<Meal> candidateMeals = filterMealsByIngredient(wishList, extractedKeyword);
+
+        // If no matching meals in the wishlist, try the recipes list.
+        if (candidateMeals.isEmpty()) {
+            List<Meal> recipesList = mealManager.getRecipesList().getList();
+            candidateMeals = filterMealsByIngredient(recipesList, extractedKeyword);
+        }
+
+        if (candidateMeals.isEmpty()) {
+            ui.printMessage("No meal found containing ingredient: " + extractedKeyword);
+            return;
+        }
+
+        // Randomly select a meal from the candidate meals.
+        Random random = new Random();
+        Meal selectedMeal = candidateMeals.get(random.nextInt(candidateMeals.size()));
+
+        // Build the output message.
+        StringBuilder sb = new StringBuilder();
+        sb.append("Recommended Meal: ").append(selectedMeal.getName())
+                .append(" (").append(selectedMeal).append(")")
+                .append(System.lineSeparator());
+        sb.append("Ingredients:").append(System.lineSeparator());
+
+        List<Ingredient> mealIngredients = selectedMeal.getIngredientList();
+        for (int i = 0; i < mealIngredients.size(); i++) {
+            Ingredient ing = mealIngredients.get(i);
+            sb.append("   ").append(i + 1).append(". ").append(ing.toString())
+                    .append(System.lineSeparator());
+        }
+
+        // Determine which ingredients are missing from the inventory.
+        List<String> missingIngredients = mealIngredients.stream()
+                .filter(ing -> !inventory.hasIngredient(ing.getName().toLowerCase()))
+                .map(Ingredient::getName)
+                .collect(Collectors.toList());
+        if (missingIngredients.isEmpty()) {
+            sb.append("You have all the necessary ingredients for this meal.");
+        } else {
+            sb.append("Missing Ingredients: ").append(String.join(", ", missingIngredients));
+        }
+
+        ui.printMessage(sb.toString());
+    }
+```
+```java
+ @Override
+    public void check() throws EZMealPlanException {
+        logger.fine("Checking '" + userInput + "' for recommend command errors.");
+        checkIngExists();
+        checkIngredientExists();
+        setPassed(true);
+    }
+```
 
 ##### 14.3 Sequence Diagram
+<<<<<<< HEAD
 
+=======
+Here is the sequence diagram for illustrating the interactions between RecommendCommand, RecommendChecker and other system component classes while processing the user input:
+>>>>>>> d6d099d4ea0da94c7081f7e639e7123a4c5ca9d3
 ![RecommendCommand.png](diagrams/RecommendCommand.png)
 ![RecommendChecker.png](diagrams/RecommendChecker.png)
 
 ##### 14.4 Unit Testing
 
 ###### Testing Approach
+- Uses a test-specific RecommendCommandTest to ensure that the RecommendChecker and RecommendCommand account for different types of user inputs and proceed as normal.
+- Test with different types of user inputs that gives no error and some exceptions.
+- Executes RecommendChecker and RecommendCommand.
+- Verifies that the exceptions are thrown according to the user inputs.
 
 ###### Unit Test Code
+Here is a snippet of the unit test code:
+```java
+@Test
+public void recommendCommand_matchingIngredientInWishlist_success() throws Exception {
+    logger.fine("Running recommendCommand_matchingIngredientInWishlist_success()");
+    MealManager mealManager = new MealManager();
+    mealManager.getWishList().getList().clear();
+    mealManager.getRecipesList().getList().clear();
+
+    Meal meal = new Meal("Salmon Rice");
+    meal.addIngredient(new Ingredient("salmon", "2.50"));
+    mealManager.getWishList().addMeal(meal);
+
+    TestUI ui = new TestUI();
+    RecommendCommand command = new RecommendCommand("recommend /ing salmon");
+    command.execute(mealManager, ui);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("Recommended Meal: ").append("Salmon Rice")
+            .append(" (").append("Salmon Rice ($2.50)").append(")")
+            .append(System.lineSeparator());
+    sb.append("Ingredients:").append(System.lineSeparator());
+    sb.append("   ").append(1).append(". ").append("salmon ($2.50)")
+            .append(System.lineSeparator());
+    sb.append("Missing Ingredients: salmon");
+    assertEquals(sb.toString(), ui.capturedMessage);
+    logger.info("recommendCommand_matchingIngredientInWishlist_success passed");
+}
+
+@Test
+public void recommendCommand_matchingIngredientInRecipes_success() throws Exception {
+    logger.fine("Running recommendCommand_matchingIngredientInRecipes_success()");
+    MealManager mealManager = new MealManager();
+    mealManager.getWishList().getList().clear();
+    mealManager.getRecipesList().getList().clear();
+
+    Meal meal = new Meal("Tofu Soup");
+    meal.addIngredient(new Ingredient("tofu", "1.20"));
+    mealManager.getRecipesList().getList().add(meal);
+
+    TestUI ui = new TestUI();
+    RecommendCommand command = new RecommendCommand("recommend /ing tofu");
+    command.execute(mealManager, ui);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("Recommended Meal: ").append("Tofu Soup")
+            .append(" (").append("Tofu Soup ($1.20)").append(")")
+            .append(System.lineSeparator());
+    sb.append("Ingredients:").append(System.lineSeparator());
+    sb.append("   ").append(1).append(". ").append("tofu ($1.20)")
+            .append(System.lineSeparator());
+    sb.append("Missing Ingredients: tofu");
+    assertEquals(sb.toString(), ui.capturedMessage);
+    logger.info("recommendCommand_matchingIngredientInRecipes_success passed");
+}
+```
 
 ### 15. InventoryCommand
 
 ##### 15.1 Design Overview
 
 ###### Function
+InventoryCommand is responsible for fetching the inventory list from the MealManager and displaying them via the
+UserInterface.
 
 ###### Design Goals
+
+**Single Responsibility:**
+
+- InventoryCommand only deals with retrieving the inventory list and forwarding it to the UI.
+
+**Decoupling:**
+
+- By isolating the command logic from both the UI and data management, future changes in either will have minimal
+  impact.
+
+**Testability:**
+
+- The design allows for easy unit testing by injecting a test-specific InventoryTest to capture and verify the output.
 
 ##### 15.2 Implementation Details
 
 ###### Component Level: InventoryCommand Class
+- Inherits from the abstract Command class.
+- Implements the `execute(MealManager mealManager, UserInterface ui)` method.
+- Uses logging to indicate execution.
+- Retrieve the list of unique ingredients and their respective counts from the inventory list.
 
 ###### Code Example
-
+```java
+@Override
+    public void execute(MealManager mealManager, UserInterface ui) throws EZMealPlanException {
+        assert mealManager != null : "MealManager cannot be null";
+        logger.fine("Executing 'inventory' command");
+        Inventory inventory = mealManager.getInventory();
+        ui.printInventory(inventory.toString());
+    }
+```
 ##### 15.3 Sequence Diagram
+<<<<<<< HEAD
 
+=======
+Here is the sequence diagram for illustrating the interactions between InventoryCommand and other system component classes:
+>>>>>>> d6d099d4ea0da94c7081f7e639e7123a4c5ca9d3
 ![InventoryCommand.png](diagrams/InventoryCommand.png)
 
 ##### 15.4 Unit Testing
 
 ###### Testing Approach
+- Uses a test-specific InventoryCommandTest to ensure that the InventoryCommand account for different types of user inputs and proceed as normal.
+- Test with different types of user inputs that gives no error and some exceptions.
+- Executes InventoryCommand.
+- Verifies that the exceptions are thrown according to the user inputs.
 
 ###### Unit Test Code
+Here is a snippet of the unit test code:
+```java
+@Test
+    void addIngredient_differentIngredients_success() {
+        Inventory inventory = new Inventory();
+        inventory.addIngredient(ingredient1);
+        inventory.addIngredient(ingredient3);
+        inventory.addIngredient(ingredient4);
+        String expectedOutput = "    1. Apple ($1.00): 1" + ls + "    2. Banana ($3.00): 1" + ls +
+                "    3. Chocolate ($4.00): 1" + ls;
+        assertEquals(expectedOutput, inventory.toString());
+    }
+
+    @Test
+    void addIngredient_repeatedIngredientsSamePrice_repetitionCaptured() {
+        Inventory inventory = new Inventory();
+        inventory.addIngredient(ingredient1);
+        inventory.addIngredient(ingredient5);
+        inventory.addIngredient(ingredient3);
+        inventory.addIngredient(ingredient4);
+        String expectedOutput = "    1. Apple ($1.00): 2" + ls + "    2. Banana ($3.00): 1" + ls +
+                "    3. Chocolate ($4.00): 1" + ls;
+        assertEquals(expectedOutput, inventory.toString());
+    }
+```
 
 ## Implementation
 

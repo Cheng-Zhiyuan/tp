@@ -42,7 +42,7 @@ In EZMealPlan, there are three main lists you will interact with:
 This is the primary list where all the meals are stored. It comes pre-populated with 100 meals, but you can also add 
 new meals with the `create` command. 
 
-The meal(s) will be <ins>sorted alphabetically by their names irrespective of the letter casings followed by their prices if the meal names are identical</ins> in the recipes list. The ingredient(s) in each meal will <ins>**ONLY** be sorted alphabetically</ins> by their names irrespective of the letter casings.
+The meal(s) will be <ins>sorted alphabetically by their names irrespective of the letter casings followed by their prices if the meal names are identical</ins> in the recipes list. The ingredient(s) in each meal will <ins>be sorted alphabetically</ins> by their names irrespective of the letter casings.
 
 Relevant commands:
 - Add a meal: `create`
@@ -55,7 +55,7 @@ Relevant commands:
 This is a secondary list where you can add and remove your favourite meals. By using the `select` command, you can select a meal from the recipes list and add it to your wishlist. The app can look through this 
 list to `recommend` you certain meals for you to prepare.
 
-The meal(s) will be <ins>sorted alphabetically by their names irrespective of the letter casings followed by their prices if the meal names are identical</ins> in the wishlist. The ingredient(s) in each meal will <ins>**ONLY** be sorted alphabetically</ins> by their names irrespective of the letter casings.
+The meal(s) will be <ins>sorted alphabetically by their names irrespective of the letter casings followed by their prices if the meal names are identical</ins> in the wishlist. The ingredient(s) in each meal will <ins> be sorted alphabetically</ins> by their names irrespective of the letter casings.
 
 **Note:** Any meals in the wishlist that are not found in the recipes list will be deemed **illegal** and be <ins>removed from the wishlist</ins>. Before adding the respective meals into the wishlist, those meals **must be present in the recipes list**. The same meal cannot be added more than once into the wishlist.
 
@@ -79,7 +79,6 @@ The specific features and syntax are elaborated below.
 
 ## Features 
 
-[!NOTE]
 Notes about the command format:
 
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.
@@ -128,7 +127,8 @@ This command creates a new meal with the relevant ingredients and adds the meal 
 
 Syntax:
 ```
-    create /mname MEAL_NAME /ing INGREDIENT_1_NAME(INGREDIENT_1_COST)[, INGREDIENT_2_NAME(INGREDIENT_2_COST), ...]
+    create /mname MEAL_NAME /ing INGREDIENT_1_NAME(INGREDIENT_1_COST)
+        [, INGREDIENT_2_NAME(INGREDIENT_2_COST), ...]
 ```  
 Example code:
 ```
@@ -179,8 +179,6 @@ Let A, B and C be ingredients. Let Meal_No. be meal name.
 **Invalid** subsequent `create` commands:
 
 `create /mname Meal_1 /ing A(1.50), B(1.50)`
-
-`create /mname Meal_1 /ing B(1.00), A(2.00)`
 
 ### Displaying the Recipes List: `recipes`
 
@@ -369,7 +367,8 @@ This command allows the user to add ingredients into the inventory.
 
 Syntax:
 ```
-    buy /ing INGREDIENT_1_NAME(INGREDIENT_1_PRICE)[, INGREDIENT_2_NAME(INGREDIENT_2_PRICE), ...]
+    buy /ing INGREDIENT_1_NAME(INGREDIENT_1_PRICE)
+        [, INGREDIENT_2_NAME(INGREDIENT_2_PRICE), ...]
 ```
 Example code:
 ```
@@ -400,14 +399,19 @@ Sample output:
 
 This command allows the user to remove ingredients from the inventory.
 * To consume more than 1 ingredient, `,` is needed to separate each ingredient. 
+* An optional cost can be added to each ingredient to only `consume` the particular `Ingredient` with that price.
+
 
    Syntax:
 ```
     consume /ing INGREDIENT_1_NAME[, INGREDIENT_2_NAME, ...]
+    consume /ing INGREDIENT_1_NAME(INGREDIENT_1_PRICE)
+        [, INGREDIENT_2_NAME(INGREDIENT_2_PRICE), ...]
 ```
 Example code:
 ```
     consume /ing fish
+    consume /ing fish (10.00)
 ```
 Sample output:
 
@@ -418,7 +422,7 @@ Sample output:
 This command recommends the user with a meal containing the specified ingredient, for the user to prepare. It will 
 also display the missing ingredients that need to be bought.
 
-This command looks through the Wishlist to recommend a meal; if no meals are found, then it will recommend a meal 
+This command looks through the `Wishlist` to recommend a meal; if no meals are found, then it will recommend a meal 
 from the Recipes List
 
 Syntax:
