@@ -1976,11 +1976,16 @@ public void check() throws EZMealPlanException {
 ##### 14.3 Sequence Diagram
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 Here is the sequence diagram for illustrating the interactions between RecommendCommand, RecommendChecker and other
 system component classes while processing the user input:
 > > > > > > > d6d099d4ea0da94c7081f7e639e7123a4c5ca9d3
+=======
+Here is the sequence diagram for illustrating the interactions between RecommendCommand, RecommendChecker and other system component classes while processing the user input:
+
+>>>>>>> 628964ffdf1caeaae66f8bb35b8ce39586be7245
 ![RecommendCommand.png](diagrams/RecommendCommand.png)
 ![RecommendChecker.png](diagrams/RecommendChecker.png)
 
@@ -2085,6 +2090,7 @@ UserInterface.
 - Retrieve the list of unique ingredients and their respective counts from the inventory list.
 
 ###### Code Example
+<<<<<<< HEAD
 
 ```java
 
@@ -2105,6 +2111,19 @@ public void execute(MealManager mealManager, UserInterface ui) throws EZMealPlan
 Here is the sequence diagram for illustrating the interactions between InventoryCommand and other system component
 classes:
 > > > > > > > d6d099d4ea0da94c7081f7e639e7123a4c5ca9d3
+=======
+```java
+@Override
+    public void execute(MealManager mealManager, UserInterface ui) throws EZMealPlanException {
+        assert mealManager != null : "MealManager cannot be null";
+        logger.fine("Executing 'inventory' command");
+        Inventory inventory = mealManager.getInventory();
+        ui.printInventory(inventory.toString());
+    }
+```
+##### 15.3 Sequence Diagram
+Here is the sequence diagram for illustrating the interactions between InventoryCommand and other system component classes:
+>>>>>>> 628964ffdf1caeaae66f8bb35b8ce39586be7245
 ![InventoryCommand.png](diagrams/InventoryCommand.png)
 
 ##### 15.4 Unit Testing
